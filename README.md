@@ -1,47 +1,25 @@
-# Parchment
+<p align="center">
+  <img src="https://raw.githubusercontent.com/hndrx67/Parchment/main/art/logo.png" width="128" alt="Parchment Logo">
+</p>
 
-Parchment is a minimal, offline-first PDF library and reader for Android.
+<h1 align="center">Parchment</h1>
 
-Current version: **1.4.6 beta**
+<p align="center">
+  <strong>A minimal, offline-first PDF library and reader for Android.</strong>
+</p>
 
-## Included
+<p align="center">
+  <a href="https://github.com/hndrx67/Parchment/actions"><img src="https://img.shields.io/github/actions/workflow/status/hndrx67/Parchment/android.yml?branch=main&style=flat-square" alt="Build Status"></a>
+  <a href="https://github.com/hndrx67/Parchment/releases"><img src="https://img.shields.io/badge/version-1.4.6--beta-blue?style=flat-square" alt="Version"></a>
+  <a href="https://github.com/hndrx67/Parchment/stargazers"><img src="https://img.shields.io/github/stars/hndrx67/Parchment?style=flat-square" alt="Stars"></a>
+  <a href="https://github.com/hndrx67/Parchment/network/members"><img src="https://img.shields.io/github/forks/hndrx67/Parchment?style=flat-square" alt="Forks"></a>
+  <a href="https://github.com/hndrx67/Parchment/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-GPL%20v2-yellow.svg?style=flat-square" alt="License"></a>
+</p>
 
-- Look and Feel → Appearance with Parchment, OLED Black, Mint Green, Haze Purple, Ocean Blue, and Rose palettes for light and dark modes
-- Collection cards or compact entries with individual colors and icons
-- Experimental Recovery: back up/recover configuration as JSON, or PDFs, covers, avatars, and configuration together as ZIP; configuration alone does not transfer PDF files
-- Local profiles with usernames, pictures, personalized splash greetings, and separate reading histories and foreground reading time; profiles share the library
-- Library search, sorting, favorites filter, tag filters, and grid/list layout persist across launches
-- Brief branded splash on fresh launches with the app version
-- Settings → About Parchment with hndrx credits and website
-- Theme-colored navigation fades and a setting to disable app animations
-- Small, medium, large, and custom library cover widths (80–400 dp)
-- Tag filtering (matches any selected tag)
-- Long-press a PDF to enter Management Mode with a selection highlight and action window; select multiple PDFs to assign tags, add to collections, favorite, or delete
-- Compact per-cover action menus scale with grid width; entries show assigned collection names
-- Custom cover preview and replacement, with a Revert to original cover action
-- Pull down from the top of the library grid or list to refresh entries and covers
-- Privacy → Public Mode masks covers tagged Adult Content with a black warning placeholder
-- Storage settings show the import destination and let you select a folder; the choice applies to new imports and existing PDFs remain accessible in their original locations
-- Dimmed import progress with Abort; staged files are removed on cancellation or failure
-- Content-based duplicate checking skips renamed copies and repeats within the same selection while importing new PDFs
-- Import one or multiple PDFs through Android's document picker
-- Copy imported documents into app storage or a user-selected folder
-- Generate the first page as a library cover
-- Grid and list layouts
-- Search, favorites, and sorting
-- Editable title, author, category, tags, notes, and custom cover
-- Continuous PDF reading with zoom and page navigation
-- Persisted reading progress
-- Light and dark themes
-- Local Room database
-- Global reader and appearance settings stored with DataStore
-- Continuous vertical and horizontal reading
-- Paged vertical and horizontal reading
-- Light, dark, and sepia reader backgrounds
-- Fit-width and fit-page display modes
-- Optional inverted PDF colors for night reading
-- Adjustable page spacing, margins, brightness, tap navigation, fullscreen, orientation, and screen-awake behavior
-- Quick reader settings available without leaving the open document
+<p align="center">
+  <a href="https://twitter.com/your_handle"><img src="https://img.shields.io/badge/Twitter-1DA1F2?style=flat-square&logo=twitter&logoColor=white" alt="Twitter"></a>
+  <a href="https://linkedin.com/in/your_profile"><img src="https://img.shields.io/badge/LinkedIn-0077B5?style=flat-square&logo=linkedin&logoColor=white" alt="LinkedIn"></a>
+</p>
 
 ---
 
