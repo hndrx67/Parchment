@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/hndrx67/Parchment/main/art/logo.png" width="128" alt="Parchment Logo">
+  <img src="https://raw.githubusercontent.com/hndrx67/Parchment/main/app-logo/parchment-logo-1024.png" width="128" alt="Parchment Logo">
 </p>
 
 <h1 align="center">Parchment</h1>
@@ -21,9 +21,13 @@
   <a href="https://linkedin.com/in/your_profile"><img src="https://img.shields.io/badge/LinkedIn-0077B5?style=flat-square&logo=linkedin&logoColor=white" alt="LinkedIn"></a>
 </p>
 
----
+## Open in Android Studio
 
-## Overview
+1. Open Android Studio and choose **Open**.
+2. Select the `Parchment` directory.
+3. Allow Gradle Sync to finish. Use Android Studio's bundled JDK 17.
+4. Install Android SDK 36 if prompted.
+5. Run on a device or emulator with Android 8.0 (API 26) or newer.
 
 Parchment is designed to be a lightweight and elegant solution for managing and reading PDF documents on Android. It prioritizes privacy and local-first storage, ensuring your library remains yours. Built with modern Android technologies, it offers a highly customizable experience with multiple color palettes and personalized reading profiles.
 
