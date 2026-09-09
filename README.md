@@ -1,6 +1,4 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/hndrx67/Parchment/main/app-logo/parchment-logo-1024.png" width="128" alt="Parchment Logo">
-</p>
+# Parchment
 
 <h1 align="center">Parchment</h1>
 
