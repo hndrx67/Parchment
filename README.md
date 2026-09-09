@@ -86,6 +86,9 @@ Run instrumentation tests to verify library features:
 adb shell am instrument -w org.hndrx.parchment.test/org.hndrx.parchment.FeatureTestRunner
 ```
 
+### Download
+Download from the [Releases](https://github.com/hndrx67/Parchment/releases) page
+
 ## Roadmap
 
 - [ ] Annotations and highlights
@@ -114,9 +117,3 @@ parchment/
 ## License
 
 Parchment is licensed under the **GNU General Public License v2**. See the [LICENSE](LICENSE) file for more details.
-
----
-
-<p align="center">
-  Developed by <a href="https://github.com/hndrx67">hndrx67</a>
-</p>
