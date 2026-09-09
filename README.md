@@ -88,6 +88,9 @@ Run instrumentation tests to verify library features:
 adb shell am instrument -w org.hndrx.parchment.test/org.hndrx.parchment.FeatureTestRunner
 ```
 
+### Download
+Download from the [Releases](https://github.com/hndrx67/Parchment/releases) page
+
 ## Roadmap
 
 - [ ] Annotations and highlights
