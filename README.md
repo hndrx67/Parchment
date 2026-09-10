@@ -1,4 +1,6 @@
-# Parchment
+<p align="center">
+  <img src="app-logo/parchment-logo-1024.png" alt="Parchment app logo" width="160">
+</p>
 
 <h1 align="center">Parchment</h1>
 
