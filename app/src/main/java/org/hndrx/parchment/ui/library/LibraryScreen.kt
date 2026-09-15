@@ -42,7 +42,7 @@ import org.hndrx.parchment.ui.profile.ProfileAvatar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LibraryScreen(viewModel: LibraryViewModel, openBook: (String) -> Unit, editBook: (String) -> Unit, openSettings: () -> Unit,
-    openCollections: () -> Unit, openProfile: () -> Unit = {}, collectionId: String? = null, back: () -> Unit = {}) {
+    openCollections: () -> Unit, openProfile: () -> Unit = {}, collectionId: String? = null, back: () -> Unit = {}, openViewed: () -> Unit = {}) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val preferences by viewModel.readerPreferences.collectAsStateWithLifecycle()
     val profile by viewModel.activeProfile.collectAsStateWithLifecycle()
@@ -108,6 +108,7 @@ fun LibraryScreen(viewModel: LibraryViewModel, openBook: (String) -> Unit, editB
                 Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (!management) {
                     if (collectionId == null) TextButton(openCollections) { Icon(Icons.Default.Folder, null); Spacer(Modifier.width(6.dp)); Text("Collections") }
+                    if (collectionId == null) TextButton(openViewed) { Icon(Icons.Default.Visibility, null); Spacer(Modifier.width(6.dp)); Text("Viewed") }
                     TextButton({ tagsOpen = true }) {
                         Icon(Icons.Default.Label, null); Spacer(Modifier.width(6.dp))
                         Text(if (state.selectedTags.isEmpty()) "Filter tags" else "Tags (${state.selectedTags.size})")

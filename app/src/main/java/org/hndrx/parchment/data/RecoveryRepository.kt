@@ -23,7 +23,7 @@ class RecoveryRepository(private val context: Context, private val db: Parchment
             "books" to array(db.books().getAll().map { b -> json("id" to b.id, "title" to b.title, "author" to b.author,
                 "description" to b.description, "category" to b.category, "tags" to b.tags, "filePath" to b.filePath,
                 "coverPath" to b.coverPath, "customCoverPath" to b.customCoverPath, "pageCount" to b.pageCount,
-                "currentPage" to b.currentPage, "isFavorite" to b.isFavorite, "addedAt" to b.addedAt, "lastOpenedAt" to b.lastOpenedAt) }),
+                "currentPage" to b.currentPage, "isFavorite" to b.isFavorite, "addedAt" to b.addedAt, "lastOpenedAt" to b.lastOpenedAt, "viewedOnly" to b.viewedOnly) }),
             "collections" to array(db.collections().getAll().map { json("id" to it.id, "name" to it.name, "color" to it.color, "icon" to it.icon) }),
             "members" to array(db.collections().getMembers().map { json("collectionId" to it.collectionId, "bookId" to it.bookId) }),
             "profiles" to array(db.profiles().getAll().map { json("id" to it.id, "username" to it.username, "avatarPath" to it.avatarPath) }),
@@ -142,7 +142,7 @@ class RecoveryRepository(private val context: Context, private val db: Parchment
                     file, assets["covers/$index.png"]?.path ?: old?.coverPath ?: safeStoredPath(b.optString("coverPath")) ?: "",
                     assets["custom/$index.bin"]?.path ?: old?.customCoverPath ?: safeStoredPath(b.optString("customCoverPath")),
                     b.getInt("pageCount"), b.optInt("currentPage").coerceIn(0, b.getInt("pageCount") - 1), b.optBoolean("isFavorite"),
-                    b.optLong("addedAt", System.currentTimeMillis()), if (b.isNull("lastOpenedAt")) null else b.getLong("lastOpenedAt"))
+                    b.optLong("addedAt", System.currentTimeMillis()), if (b.isNull("lastOpenedAt")) null else b.getLong("lastOpenedAt"), b.optBoolean("viewedOnly"))
             }
             val profiles = objects(config, "profiles").mapIndexed { index, p ->
                 Profile(p.getString("id"), p.getString("username"), assets["avatars/$index.bin"]?.path ?: safeStoredPath(p.optString("avatarPath")))

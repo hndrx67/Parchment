@@ -56,10 +56,22 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
     val history = container.profiles.history().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
     val recoveryState = MutableStateFlow(RecoveryState())
     private var recoveryJob: Job? = null
+    val externalBook = MutableStateFlow<String?>(null)
+    val externalError = MutableStateFlow<String?>(null)
+    val viewedBooks = repository.books.map { books -> books.filter { it.viewedOnly }.sortedByDescending { it.lastOpenedAt ?: it.addedAt } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    fun openExternal(uri: Uri) = viewModelScope.launch {
+        try { externalBook.value = repository.openExternal(uri) }
+        catch (error: CancellationException) { throw error }
+        catch (error: Exception) { externalError.value = "Could not open PDF: ${error.localizedMessage}" }
+    }
+    fun importViewed(id: String) = manage { repository.importViewed(id, settingsRepository.preferences.first().storageDirectory) }
+    fun deleteHistory(profileId: String, bookId: String) = manage { container.profiles.deleteHistory(profileId, bookId) }
+    fun resetHistory(profileId: String) = manage { container.profiles.resetHistory(profileId) }
 
     val state = combine(repository.books, settings) { books, ui ->
         val filtered = books.filter {
-            (!ui.favoritesOnly || it.isFavorite) &&
+            !it.viewedOnly && (!ui.favoritesOnly || it.isFavorite) &&
                 (ui.selectedTags.isEmpty() || it.tagList().any { tag -> tag in ui.selectedTags }) &&
                 (ui.query.isBlank() || listOf(it.title, it.author, it.category, it.tags)
                     .any { value -> value.contains(ui.query, ignoreCase = true) })
@@ -69,7 +81,7 @@ class LibraryViewModel(application: Application) : AndroidViewModel(application)
             BookSort.TITLE -> filtered.sortedBy { it.title.lowercase() }
             BookSort.LAST_OPENED -> filtered.sortedByDescending { it.lastOpenedAt ?: 0L }
         }
-        ui.copy(books = sorted, availableTags = books.flatMap { it.tagList() }.distinct().sorted())
+        ui.copy(books = sorted, availableTags = books.filterNot { it.viewedOnly }.flatMap { it.tagList() }.distinct().sorted())
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), LibraryUiState())
     val readerPreferences = settingsRepository.preferences.stateIn(
         viewModelScope, SharingStarted.WhileSubscribed(5_000), ReaderPreferences(publicMode = true)

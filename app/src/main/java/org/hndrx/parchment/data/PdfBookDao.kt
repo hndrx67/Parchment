@@ -19,6 +19,13 @@ interface PdfBookDao {
 
     @Insert
     suspend fun insertAll(books: List<PdfBook>)
+    @Query("UPDATE pdf_books SET viewedOnly = 0 WHERE id IN (:ids)")
+    suspend fun promoteViewed(ids: List<String>)
+    @Transaction
+    suspend fun commitImport(books: List<PdfBook>, promotedIds: List<String>) {
+        insertAll(books)
+        promoteViewed(promotedIds)
+    }
     @Upsert suspend fun restoreAll(books: List<PdfBook>)
     @Query("UPDATE pdf_books SET currentPage = :page, lastOpenedAt = :now WHERE id = :id")
     suspend fun setProgress(id: String, page: Int, now: Long)

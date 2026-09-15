@@ -42,6 +42,8 @@ fun ProfileScreen(viewModel: LibraryViewModel, back: () -> Unit, openBook: (Stri
     var username by remember(profile.id, profile.username) { mutableStateOf(profile.username) }
     var creating by remember { mutableStateOf(false) }
     var newName by remember { mutableStateOf("") }
+    var deleteEntry by remember(profile.id) { mutableStateOf<org.hndrx.parchment.data.ReadingHistory?>(null) }
+    var reset by remember(profile.id) { mutableStateOf(false) }
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri -> uri?.let { viewModel.setProfilePicture(profile, it) } }
     val snackbar = remember { SnackbarHostState() }
     LaunchedEffect(state.message) { state.message?.let { snackbar.showSnackbar(it); viewModel.clearMessage() } }
@@ -62,6 +64,7 @@ fun ProfileScreen(viewModel: LibraryViewModel, back: () -> Unit, openBook: (Stri
             Text("Profiles share this library. Reading history and time are tracked separately.", style = MaterialTheme.typography.bodySmall)
             HorizontalDivider()
             Text("Reading history", style = MaterialTheme.typography.titleLarge)
+            if (entries.isNotEmpty()) TextButton(enabled = !state.managing, onClick = { reset = true }) { Text("Reset reading history") }
             Text("${"%.2f".format(entries.sumOf { it.totalMillis } / 3_600_000.0)} hours · ${entries.size} documents", style = MaterialTheme.typography.titleMedium)
             Text("Time counts while a document is open in the foreground. Tracking starts with this version.", style = MaterialTheme.typography.bodySmall)
             if (entries.isEmpty()) Text("Open a PDF to start your reading history.")
@@ -71,10 +74,20 @@ fun ProfileScreen(viewModel: LibraryViewModel, back: () -> Unit, openBook: (Stri
                     Text("${"%.2f".format(entry.totalMillis / 3_600_000.0)} hours (${entry.totalMillis / 60_000} min)")
                     Text(DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(Date(entry.lastReadAt)), style = MaterialTheme.typography.bodySmall)
                     TextButton({ openBook(entry.bookId) }) { Text("Open document") }
+                    TextButton(enabled = !state.managing, onClick = { deleteEntry = entry }) { Text("Delete history entry") }
                 } }
             }
         }
     }
+    if (reset || deleteEntry != null) AlertDialog(onDismissRequest = { reset = false; deleteEntry = null },
+        title = { Text(if (reset) "Reset reading history?" else "Delete history entry?") },
+        text = { Text(if (reset) "Clear all reading history and tracked time for ${profile.username}? Your PDFs and reading positions are kept."
+            else "Delete the reading history and tracked time for ${deleteEntry?.title}? Your PDF and reading position are kept.") },
+        confirmButton = { TextButton(enabled = !state.managing, onClick = {
+            if (reset) viewModel.resetHistory(profile.id) else deleteEntry?.let { viewModel.deleteHistory(it.profileId, it.bookId) }
+            reset = false; deleteEntry = null
+        }) { Text(if (reset) "Reset" else "Delete") } },
+        dismissButton = { TextButton({ reset = false; deleteEntry = null }) { Text("Cancel") } })
     if (creating) AlertDialog(onDismissRequest = { creating = false }, title = { Text("New profile") },
         text = { OutlinedTextField(newName, { newName = it.take(80) }, label = { Text("Username") }) },
         confirmButton = { TextButton(enabled = newName.isNotBlank(), onClick = { viewModel.saveProfile(Profile(UUID.randomUUID().toString(), newName.trim())); creating = false }) { Text("Create") } },

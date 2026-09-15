@@ -36,6 +36,37 @@ class FeatureTestRunner : Instrumentation() {
 
     override fun onStart() {
         val tests: List<Pair<String, suspend () -> Unit>> = listOf(
+            "externalPdfLifecycle" to { fixture { db, storage, root ->
+                val repository = LibraryRepository(db.books(), storage)
+                val uri = pdf(root, "external.pdf", "External PDF")
+                val id = repository.openExternal(uri)
+                check(db.books().get(id)!!.viewedOnly)
+                check(repository.openExternal(uri) == id)
+                check(db.books().getAll().size == 1)
+                repository.importViewed(id, "")
+                check(!db.books().get(id)!!.viewedOnly)
+                check(repository.openExternal(uri) == id)
+                val other = pdf(root, "viewed.pdf", "Viewed PDF")
+                val viewedId = repository.openExternal(other)
+                val result = repository.importAll(listOf(other)) { _, _ -> }
+                check(result.imported == 1 && !db.books().get(viewedId)!!.viewedOnly)
+                val removable = repository.openExternal(pdf(root, "remove.pdf", "Remove PDF"))
+                val book = db.books().get(removable)!!
+                repository.delete(book)
+                check(db.books().get(removable) == null && !File(book.filePath).exists())
+                check(File(root, "remove.pdf").exists())
+            } },
+            "historyDeletionIsProfileScoped" to { fixture { db, _, _ ->
+                val dao = db.profiles()
+                dao.record("one", "a", "A", 1000, 1)
+                dao.record("one", "b", "B", 2000, 2)
+                dao.record("two", "a", "A", 3000, 3)
+                dao.deleteHistory("one", "a")
+                check(dao.getHistory("one", "a") == null)
+                check(dao.getHistory("one", "b")!!.totalMillis == 2000L)
+                dao.resetHistory("one")
+                check(dao.getHistory().single().profileId == "two")
+            } },
             "migrationPreservesLibrary" to { migrationPreservesLibrary() },
             "renamedDuplicateKeepsNewFiles" to { fixture { db, storage, root ->
                 val repository = LibraryRepository(db.books(), storage)
@@ -334,6 +365,7 @@ class FeatureTestRunner : Instrumentation() {
         val migrated = ParchmentDatabase.create(targetContext, name)
         try {
             val book = migrated.books().get("existing")!!
+            check(!book.viewedOnly)
             check(book.title == "Keep me" && book.currentPage == 4 && book.isFavorite && book.tags == "history")
             migrated.collections().insert(BookCollection("new", "Migrated"))
             migrated.collections().add(CollectionBook("new", book.id))

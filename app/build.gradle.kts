@@ -13,8 +13,8 @@ android {
         applicationId = "org.hndrx.parchment"
         minSdk = 26
         targetSdk = 36
-        versionCode = 4
-        versionName = "1.4.6-beta"
+        versionCode = 6
+        versionName = "1.4.8-beta"
         testInstrumentationRunner = "org.hndrx.parchment.FeatureTestRunner"
     }
 

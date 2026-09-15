@@ -11,6 +11,8 @@ data class ReadingHistory(val profileId: String, val bookId: String, val title: 
 
 @Dao
 interface ProfileDao {
+    @Query("DELETE FROM reading_history WHERE profileId = :profile AND bookId = :book") suspend fun deleteHistory(profile: String, book: String)
+    @Query("DELETE FROM reading_history WHERE profileId = :profile") suspend fun resetHistory(profile: String)
     @Query("SELECT * FROM profiles ORDER BY username COLLATE NOCASE") fun observeAll(): Flow<List<Profile>>
     @Query("SELECT * FROM profiles") suspend fun getAll(): List<Profile>
     @Query("SELECT * FROM reading_history ORDER BY lastReadAt DESC") fun history(): Flow<List<ReadingHistory>>

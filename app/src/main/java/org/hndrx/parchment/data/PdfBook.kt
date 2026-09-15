@@ -18,7 +18,8 @@ data class PdfBook(
     val currentPage: Int = 0,
     val isFavorite: Boolean = false,
     val addedAt: Long = System.currentTimeMillis(),
-    val lastOpenedAt: Long? = null
+    val lastOpenedAt: Long? = null,
+    @androidx.room.ColumnInfo(defaultValue = "0") val viewedOnly: Boolean = false
 ) {
     val progress: Float get() = if (pageCount <= 1) 0f else currentPage.toFloat() / (pageCount - 1)
     val displayedCover: String get() = customCoverPath ?: coverPath

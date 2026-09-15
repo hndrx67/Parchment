@@ -25,15 +25,49 @@ class LibraryRepository(private val dao: PdfBookDao, private val storage: PdfSto
         refreshVersion.update { it + 1 }
     }
     fun observeBook(id: String) = dao.observe(id)
+    suspend fun openExternal(uri: Uri): String = importMutex.withLock {
+        withContext(Dispatchers.IO + NonCancellable) {
+            val staged = storage.importPdf(uri).copy(viewedOnly = true)
+            var committed = false
+            try {
+                val hash = storage.fingerprint(staged.filePath)
+                val existing = dao.getAll().firstOrNull {
+                    try { storage.fingerprint(it.filePath) == hash }
+                    catch (_: java.io.FileNotFoundException) { false }
+                }
+                if (existing != null) return@withContext existing.id
+                dao.insertAll(listOf(staged))
+                committed = true
+                staged.id
+            } finally {
+                if (!committed) storage.deleteFiles(staged)
+            }
+        }
+    }
+
+    suspend fun importViewed(id: String, directory: String) = importMutex.withLock {
+        withContext(Dispatchers.IO + NonCancellable) {
+            val book = dao.get(id) ?: return@withContext
+            if (!book.viewedOnly) return@withContext
+            val imported = if (directory.isBlank()) book else storage.moveToDirectory(book, Uri.parse(directory), keepSource = true)
+            try { dao.update(imported.copy(viewedOnly = false)) }
+            catch (error: Throwable) {
+                if (imported.filePath != book.filePath) storage.deleteFiles(imported.copy(coverPath = "", customCoverPath = null))
+                throw error
+            }
+            if (imported.filePath != book.filePath) java.io.File(book.filePath).delete()
+        }
+    }
     // Stage new PDFs; duplicate copies are discarded without rejecting the other files.
     suspend fun importAll(uris: List<Uri>, directory: String = "", onCommitted: (ImportResult) -> Unit = {}, progress: (Int, Int) -> Unit): ImportResult = importMutex.withLock {
         withContext(Dispatchers.IO) {
             val staged = mutableListOf<PdfBook>()
             var committed = false
             try {
-                val known = mutableMapOf<String, String>()
+                val known = mutableMapOf<String, PdfBook>()
+                val promoted = mutableSetOf<String>()
                 dao.getAll().forEach { book ->
-                    try { known[storage.fingerprint(book.filePath)] = book.title }
+                    try { known[storage.fingerprint(book.filePath)] = book }
                     catch (_: java.io.FileNotFoundException) { /* Configuration-only recovery may reference PDFs not yet restored. */ }
                 }
                 val duplicates = mutableListOf<String>()
@@ -43,9 +77,11 @@ class LibraryRepository(private val dao: PdfBookDao, private val storage: PdfSto
                     val book = storage.importPdf(uri)
                     staged.add(book)
                     val hash = storage.fingerprint(book.filePath)
-                    val original = known.putIfAbsent(hash, book.title)
+                    val original = known.putIfAbsent(hash, book)
                     if (original != null) {
-                        duplicates.add("${book.title} — matches $original")
+                        if (!original.viewedOnly || !promoted.add(original.id)) {
+                            duplicates.add("${book.title} — matches ${original.title}")
+                        }
                         storage.deleteFiles(book)
                         staged.remove(book)
                     }
@@ -58,10 +94,10 @@ class LibraryRepository(private val dao: PdfBookDao, private val storage: PdfSto
                     }
                 }
                 currentCoroutineContext().ensureActive()
-                val result = ImportResult(staged.size, duplicates)
+                val result = ImportResult(staged.size + promoted.size, duplicates)
                 // Finish the atomic insert even if Abort is tapped at the commit boundary.
                 withContext(NonCancellable) {
-                    dao.insertAll(staged)
+                    dao.commitImport(staged, promoted.toList())
                     committed = true
                     onCommitted(result)
                 }

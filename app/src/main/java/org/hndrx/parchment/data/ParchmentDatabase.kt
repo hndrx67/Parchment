@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [PdfBook::class, BookCollection::class, CollectionBook::class, Profile::class, ReadingHistory::class], version = 3, exportSchema = false)
+@Database(entities = [PdfBook::class, BookCollection::class, CollectionBook::class, Profile::class, ReadingHistory::class], version = 4, exportSchema = false)
 abstract class ParchmentDatabase : RoomDatabase() {
     abstract fun books(): PdfBookDao
     abstract fun collections(): CollectionDao
@@ -32,6 +32,10 @@ abstract class ParchmentDatabase : RoomDatabase() {
                 db.execSQL("CREATE TABLE IF NOT EXISTS profiles (id TEXT NOT NULL, username TEXT NOT NULL, avatarPath TEXT, PRIMARY KEY(id))")
                 db.execSQL("CREATE TABLE IF NOT EXISTS reading_history (profileId TEXT NOT NULL, bookId TEXT NOT NULL, title TEXT NOT NULL, totalMillis INTEGER NOT NULL, lastReadAt INTEGER NOT NULL, PRIMARY KEY(profileId, bookId))")
                 db.execSQL("INSERT OR IGNORE INTO profiles (id, username) VALUES ('default', 'Reader')")
+            }
+        }, object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE pdf_books ADD COLUMN viewedOnly INTEGER NOT NULL DEFAULT 0")
             }
         }).build()
     }

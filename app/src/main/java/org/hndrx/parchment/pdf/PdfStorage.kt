@@ -95,7 +95,7 @@ class PdfStorage(private val context: Context) {
         requireNotNull(context.contentResolver.openInputStream(Uri.parse(path))) { "The stored PDF is unavailable. Check its folder permission." }
     } else File(path).inputStream()
 
-    suspend fun moveToDirectory(book: PdfBook, tree: Uri): PdfBook {
+    suspend fun moveToDirectory(book: PdfBook, tree: Uri, keepSource: Boolean = false): PdfBook {
         val parent = DocumentsContract.buildDocumentUriUsingTree(tree, DocumentsContract.getTreeDocumentId(tree))
         val document = requireNotNull(DocumentsContract.createDocument(context.contentResolver, parent, "application/pdf", "${book.title.take(80).replace('/', '_')}-${book.id}.pdf")) {
             "Unable to create a PDF in the selected folder"
@@ -113,7 +113,7 @@ class PdfStorage(private val context: Context) {
                 }
             }
             currentCoroutineContext().ensureActive()
-            File(book.filePath).delete()
+            if (!keepSource) File(book.filePath).delete()
             return book.copy(filePath = document.toString())
         } catch (error: Throwable) {
             runCatching { DocumentsContract.deleteDocument(context.contentResolver, document) }
@@ -138,7 +138,7 @@ class PdfStorage(private val context: Context) {
         }
     }
 
-    private fun queryName(uri: Uri): String? = context.contentResolver.query(
+    private fun queryName(uri: Uri): String? = if (uri.scheme == "file") uri.lastPathSegment else context.contentResolver.query(
         uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null
     )?.use { cursor -> if (cursor.moveToFirst()) cursor.getString(0) else null }
 }

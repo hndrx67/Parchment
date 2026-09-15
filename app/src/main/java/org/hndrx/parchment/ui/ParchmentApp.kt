@@ -30,8 +30,18 @@ fun ParchmentApp(viewModel: LibraryViewModel = viewModel(), onAnimationsChanged:
     val preferences by viewModel.readerPreferences.collectAsStateWithLifecycle()
     val library by viewModel.state.collectAsStateWithLifecycle()
     val profile by viewModel.activeProfile.collectAsStateWithLifecycle()
+    val externalBook by viewModel.externalBook.collectAsStateWithLifecycle()
+    val externalError by viewModel.externalError.collectAsStateWithLifecycle()
     SideEffect { onAnimationsChanged(preferences.animationsEnabled) }
     ParchmentTheme(preferences.appTheme, preferences.palette) {
+        externalError?.let { message ->
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = { viewModel.externalError.value = null },
+                title = { androidx.compose.material3.Text("Unable to open PDF") },
+                text = { androidx.compose.material3.Text(message) },
+                confirmButton = { androidx.compose.material3.TextButton({ viewModel.externalError.value = null }) { androidx.compose.material3.Text("OK") } }
+            )
+        }
         // Keep an opaque themed surface underneath every navigation transition.
         Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             var showSplash by rememberSaveable { mutableStateOf(true) }
@@ -45,6 +55,12 @@ fun ParchmentApp(viewModel: LibraryViewModel = viewModel(), onAnimationsChanged:
             if (showSplash || !library.initialized) {
                 SplashScreen(animationsEnabled = preferences.animationsEnabled, profile = profile)
             } else {
+                LaunchedEffect(externalBook) {
+                    externalBook?.let { id ->
+                        nav.navigate("reader/$id") { launchSingleTop = true }
+                        viewModel.externalBook.value = null
+                    }
+                }
                 NavHost(
                     navController = nav, startDestination = "library",
                     enterTransition = { if (preferences.animationsEnabled) fadeIn() else EnterTransition.None },
@@ -59,11 +75,15 @@ fun ParchmentApp(viewModel: LibraryViewModel = viewModel(), onAnimationsChanged:
                             editBook = { nav.navigate("details/$it") },
                             openSettings = { nav.navigate("settings") },
                             openProfile = { nav.navigate("profile") },
+                            openViewed = { nav.navigate("viewed") },
                             openCollections = { nav.navigate("collections") { launchSingleTop = true } }
                         )
                     }
                     composable("collections") {
                         CollectionsScreen(viewModel, back = nav::popBackStack, openCollection = { nav.navigate("collection/$it") { launchSingleTop = true } }, customize = { nav.navigate("collectionAppearance") })
+                    }
+                    composable("viewed") {
+                        org.hndrx.parchment.ui.library.ViewedScreen(viewModel, nav::popBackStack, { nav.navigate("reader/$it") })
                     }
                     composable("collection/{id}") {
                         LibraryScreen(
